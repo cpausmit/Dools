@@ -1,0 +1,60 @@
+#!/bin/bash
+#===================================================================================================
+# Show presently available space at Tier-3 and at Tier-2
+#===================================================================================================
+[ -z "T2TOOLS_BASE" ] && source $HOME/T2Tools/setup.sh
+
+#echo "-START---------------------"
+echo ""
+echo `date`
+echo ""
+echo "---- Tier-3 Space ----"
+echo ""
+df -h /mnt/hadoop
+echo ""
+echo "---- Tier-2 Space ----"
+echo ""
+ssh -x paus@se01.cmsaf.mit.edu df -h /mnt/hadoop
+echo ""
+echo "Hadoop details"
+list=`rglexec hdfs dfs -du -s /cms/store/user/paus/filefi/\*  | grep -v RC: \
+               | sed 's#hdfs://t2srv0014:9000/cms/store/user/##' | sed 's/\s\+/:/'`
+for line in $list
+do
+  dir=` echo $line | cut -d: -f2`
+  size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+  printf "%-20s %7.2f TB\n" $dir $size
+done
+list=`rglexec hdfs dfs -du -s /cms/store/user/paus/fastsm/\*  | grep -v RC: \
+               | sed 's#hdfs://t2srv0014:9000/cms/store/user/##' | sed 's/\s\+/:/'`
+for line in $list
+do
+  dir=` echo $line | cut -d: -f2`
+  size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+  printf "%-20s %7.2f TB\n" $dir $size
+done
+list=`rglexec hdfs dfs -du -s /cms/store/user/paus/fullsm/\*  | grep -v RC: \
+               | sed 's#hdfs://t2srv0014:9000/cms/store/user/##' | sed 's/\s\+/:/'`
+for line in $list
+do
+  dir=` echo $line | cut -d: -f2`
+  size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+  printf "%-20s %7.2f TB\n" $dir $size
+done
+
+echo ""
+echo "Hadoop total"
+list=`rglexec hdfs dfs -du -s /cms/store/user/paus | grep -v RC: \
+               | sed 's#hdfs://t2srv0014:9000/cms/store/user/##' | sed 's/\s\+/:/'`
+for line in $list
+do
+  dir=` echo $line | cut -d: -f2`
+  size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+  printf "%-20s %8.3f TB\n" $dir $size
+done
+
+echo ""
+#echo "-DONE----------------------"
+#echo `date`
+
+exit 0;
