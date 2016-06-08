@@ -29,7 +29,7 @@ list /cms/store/user/paus/filefi/044/*/*.root             > files-done.bak;   wc
 echo ""
 rm -f files-in-tmp.bak files-done.bak
 
-nMonoTop=`rglexec hdfs dfs -ls /cms/store/user/paus/fullsm/044/* |grep bambu |wc -l`
+nMonoTop=`rglexec hdfs dfs -ls /cms/store/user/paus/fullsm/044/monotop* |grep bambu |wc -l`
 echo " Progress on monotop $nMonoTop"
 echo ""
 
