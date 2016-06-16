@@ -4,7 +4,7 @@
 #---------------------------------------------------------------------------------------------------
 
 # make catalog lists
-makeCatalogsList.sh filefi/044 > ~/cms/work/fibs/makeCatalog.list-tmp
+makeCatalogsList.sh filefi/044 fullsm/044 fastsm/043 > ~/cms/work/fibs/makeCatalog.list-tmp
 
 # reserve a lock an execute the update
 fibsLock.py --cmd="mv ~/cms/work/fibs/makeCatalog.list-tmp ~/cms/work/fibs/makeCatalog.list" \

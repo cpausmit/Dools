@@ -23,9 +23,11 @@ wc -l ~/cms/work/fibs/makeCatalog*
 echo ""
 echo " TheStudyPackage -- progress"
 echo -n "  "
-list /cms/store/user/paus/filefi/044/*/crab_0*/*_tmp.root > files-in-tmp.bak; wc -l files-in-tmp.bak
+list /cms/store/user/paus/filefi/044/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root > files-in-tmp.bak
+wc -l files-in-tmp.bak
 echo -n "  "
-list /cms/store/user/paus/filefi/044/*/*.root             > files-done.bak;   wc -l files-done.bak
+list /cms/store/user/paus/filefi/044/*/*.root|grep [0-9A-Z].root                 > files-done.bak
+wc -l files-done.bak
 echo ""
 rm -f files-in-tmp.bak files-done.bak
 
