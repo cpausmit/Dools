@@ -5,7 +5,7 @@
 #===================================================================================================
 if [ -z "$T2TOOLS_BASE" ]
 then
-  echo " T2Tools are not initialized"
+  echo " T2Tools are not initialized."
   exit 1
 fi
 
@@ -31,8 +31,9 @@ wc -l files-done.bak
 echo ""
 rm -f files-in-tmp.bak files-done.bak
 
-nMonoTop=`rglexec hdfs dfs -ls /cms/store/user/paus/fullsm/044/monotop* |grep bambu |wc -l`
-echo " Progress on monotop $nMonoTop"
+nMonoTopFast=`rglexec hdfs dfs -ls /cms/store/user/paus/fastsm/043/monotop* |grep bambu |wc -l`
+nMonoTopFull=`rglexec hdfs dfs -ls /cms/store/user/paus/fullsm/044/monotop* |grep bambu |wc -l`
+echo " Progress on monotop - fastsim: $nMonoTopFast  fullsim: $nMonoTopFull"
 echo ""
 
 spaceMonitor
