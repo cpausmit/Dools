@@ -29,7 +29,7 @@ if pattern == '':
 else:
     print ' Find all crab directories matching %s.'%(pattern)
 
-cmd = 'list --long=2 ' + TRUNC + DIR + "/" + book + "/*/ | grep crab_0_"
+cmd = 'list ' + TRUNC + DIR + "/" + book + "/*/ | grep crab_0_"
 if DEBUG>0:
     print ' CMD: ' + cmd
 if pattern != "":

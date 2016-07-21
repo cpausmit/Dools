@@ -14,5 +14,5 @@ dsets=`t2tools.py --action ls --source $hadoop | sed "s@.*$book/@@"`
 mybook=`echo $book | tr / ' '`
 for dset in $dsets
 do
-  echo "$mybook $dset remove"
+  echo "$mybook $dset $REMOVE"
 done
