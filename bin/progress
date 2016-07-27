@@ -22,7 +22,7 @@ echo -n "  "
 wc -l ~/cms/work/fibs/makeCatalog*
 
 echo ""
-echo " TheStudyPackage -- progress"
+echo " Bambu -- progress"
 echo -n "  044 - "
 list /cms/store/user/paus/filefi/044/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root > files-in-tmp.bak
 wc -l files-in-tmp.bak
@@ -39,7 +39,10 @@ rm -f files-in-tmp.bak files-done.bak
 
 nMonoTopFast=`rglexec hdfs dfs -ls /cms/store/user/paus/fastsm/043/monotop* |grep bambu |wc -l`
 nMonoTopFull=`rglexec hdfs dfs -ls /cms/store/user/paus/fullsm/044/monotop* |grep bambu |wc -l`
-echo " Progress on monotop - fast: $nMonoTopFast  full: $nMonoTopFull"
+echo ""
+echo " TheStudyPackage -- progress monotop"
+echo "  fast - $nMonoTopFast"
+echo "  full - $nMonoTopFull"
 echo ""
 
 spaceMonitor
