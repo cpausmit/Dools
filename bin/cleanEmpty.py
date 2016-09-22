@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #---------------------------------------------------------------------------------------------------
 #
-# Find all crab left over directories on Tier-2 and remove them.
+# Find all empty directories and remove them.
 #
 #---------------------------------------------------------------------------------------------------
 import os,sys
@@ -22,29 +22,36 @@ if len(sys.argv) > 2:
 # hi, here we are!
 os.system("date")
 
-# make a list of all crab directories
-allCrabDirs = []
+# make a list of all empty directories (matching a pattern if requested)
+allDirs = []
 if pattern == '':
-    print ' Find all crab directories.'
+    print ' Find all empty directories.'
 else:
-    print ' Find all crab directories matching %s.'%(pattern)
+    print ' Find all empty directories matching %s.'%(pattern)
 
-cmd = 'list ' + TRUNC + DIR + "/" + book + "/*/ | grep crab_0_"
+cmd = 'list ' + TRUNC + DIR + "/" + book
 if DEBUG>0:
     print ' CMD: ' + cmd
 if pattern != "":
     cmd += "| grep %s"%(pattern)
 for line in os.popen(cmd).readlines():
-    f = (line[:-1].split("/"))[-2:]
-    sample = "/".join(f)
-    allCrabDirs.append(sample)
+    sample = line[:-1].split("/").pop()
+    
+    cmdEmpty = 't2tools.py --action=du --source=' + TRUNC + DIR + "/" + book + '/' + sample
+    lEmpty = True
+    for line in os.popen(cmdEmpty).readlines():
+        if line != '':
+            lEmpty = False
+            break
 
-    print ' Found directory: ' + sample
+    if lEmpty:
+        print ' Found empty directory: ' + sample
+        allDirs.append(sample)
 
 # say what we found
-print ' Number of crab directories found: %d'%(len(allCrabDirs))
+print ' Number of empty directories found: %d'%(len(allDirs))
 
-for sample in allCrabDirs:
+for sample in allDirs:
     cmd = 'removedir ' + TRUNC + DIR + "/" + book + "/" + sample
     if DEBUG>0:
         print ' CMD: ' + cmd
