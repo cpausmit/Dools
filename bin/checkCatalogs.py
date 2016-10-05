@@ -3,6 +3,12 @@
 #
 # Check catalogs and remove any suspicious entries. There is no cataloging of files done here.
 #
+# - find all files from the lfn file used for production
+# - find all files in the catalog
+# - find all files on disk
+#
+# Remove any file that is not coherent in any way from the catalog and if needed from disk.
+#
 #---------------------------------------------------------------------------------------------------
 import os,sys,subprocess
 import fileIds
@@ -15,17 +21,32 @@ DIR = "/store/user/paus"
 #---------------------------------------------------------------------------------------------------
 #  H E L P E R S
 #---------------------------------------------------------------------------------------------------
-def cleanFile(file,patterns):
+def removeFileIdsFromDisk(book,dataset,fileIds):
+    # take a given list of patterns and remove all related files from disk
+
+    for badFileId in sorted(fileIds):
+        if badFileId != '':
+            cmd = " t2tools.py --action=rm --source=" + TRUNC + DIR + '/' \
+                + book + '/' + dataset + '/' + badFileId + '*' 
+            print " RM - from disk: " + cmd
+            os.system(cmd)
+
+def cleanCatalogFile(file,book,dataset,patterns):
     # take a given file and remove all lines that match any of the given patterns
 
     print " Clean file: %s"%(file)
-    print " Remove: "
+    if DEBUG>0:
+        print " Remove: "
     badWords = []
     for badWord in sorted(patterns):
         if badWord != '':
             badWords.append(badWord)
             print "  " + badWord
-    
+            #cmd = " t2tools.py --action=rm --source=" + TRUNC + DIR + '/' \
+            #    + book + '/' + dataset + '/' + badWord + '*' 
+            #print " RM - from disk: " + cmd
+            #os.system(cmd)
+
     lRemove = False
     out = ''
     with open(file) as fH:
@@ -34,7 +55,7 @@ def cleanFile(file,patterns):
                 out += line
             else:
                 lRemove = True
-                print ' REMOVED: ' + line[:-1]
+                print " RM - from ctlg: " + line[:-1]
 
     # was there something removed?
     if lRemove:
@@ -50,7 +71,7 @@ def removePatternsFromCatalog(catalog,book,dataset,patterns):
 
     for filename in os.listdir(directory):
         if "Files" in filename: 
-            cleanFile(directory + '/' + filename,patterns)
+            cleanCatalogFile(directory + '/' + filename,book,dataset,patterns)
 
 def loadCatalog(catalog,book,dataset):
     # load the unique file ids of the existing catalog for existence checks (careful)
@@ -86,7 +107,7 @@ def loadCatalog(catalog,book,dataset):
     return catalogedIds
     
     
-def findLfns(dataset):
+def loadLfns(dataset):
 
     lfnIds = fileIds.fileIds()
 
@@ -119,6 +140,38 @@ def findLfns(dataset):
 
     return lfnIds
 
+def loadFilesFromDisk(book,dataset):
+
+    fileOnDiskIds = fileIds.fileIds()
+
+    # list all files from the giben directory
+    cmd = 'list ' + TRUNC + DIR + "/" + book + "/" + dataset
+    if DEBUG>0:
+        print " CMD (loadFilesFromDisk): " + cmd
+    
+    rc = 0
+    list = cmd.split(" ")
+    p = subprocess.Popen(list,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+    rc = p.returncode
+
+    if rc != 0:
+        print " ERROR -- %d"%(rc)
+        print out
+        print err
+        #sys.exit(1)
+    
+    for line in out.split("\n"):
+        if 'root' in line:
+            f = line.split(" ")
+            if len(f) > 1:
+                name = f[1]
+                nEvents = -1
+                fileOnDiskId = fileIds.fileId(name,nEvents)
+                fileOnDiskIds.addFileId(fileOnDiskId)
+
+    return fileOnDiskIds
+
 #---------------------------------------------------------------------------------------------------
 #  M A I N
 #---------------------------------------------------------------------------------------------------
@@ -150,42 +203,89 @@ for line in os.popen(cmd).readlines():
     f = (line[:-1].split("/"))[-1:]
     dataset = "/".join(f)
     allDatasets.append(dataset)
+    if DEBUG>1:
+        print ' Found Dataset: ' + dataset
+print ' Number of datasets found: %d'%(len(allDatasets))
 
-    #print ' Found Dataset: ' + dataset
+for dataset in allDatasets:
+    print ' Process Dataset: ' + dataset
 
-    lfnIds = findLfns(dataset)
+    # load all information we need
+    #-----------------------------
 
-    # check whether we oaded correctly
+    # the original lfns from DBS (our cache)
+    lfnIds = loadLfns(dataset)
+
+    # the files that we have right now on disk (Tier-2)
+    fileOnDiskIds = loadFilesFromDisk(book,dataset)
+
+    # all files in the catalog
+    catalogedIds = loadCatalog(catalog,book,dataset)
+
+    # perform all checks
+    #-------------------
+
+    # check whether we loaded correctly
     uniqueLfnIds = lfnIds.getIds()
     if len(uniqueLfnIds) > 0:
         if DEBUG>0:
             print '  --> %d lfns'%(len(uniqueLfnIds))        
+    else:
+        print ' ERROR - looks like the lfns are empty: %s'%(dataset)
 
-    # now from the catalog
-    catalogedIds = loadCatalog(catalog,book,dataset)
-    #catalogedIds.show()
-
-    # check for duplicated Ids and remove them
+    # check for duplicated Ids in the catalog and remove them
     duplicatedIds = catalogedIds.getDuplicatedIds()
-    #catalogedIds.showDuplicates()
-    if len(duplicatedIds) > 0:
-        removePatternsFromCatalog(catalog,book,dataset,duplicatedIds)
 
-    # test whether event counts are good
+    # check whether event counts are good
     incompleteIds = {}
     uniqueIds = catalogedIds.getIds()
     for id in sorted(uniqueIds):
-        nEventsLfn = lfnIds.getFileId(id).nEvents
-        nEvents = catalogedIds.getFileId(id).nEvents
+        nEventsLfn = (lfnIds.getFileId(id)).nEvents
+        nEvents = (catalogedIds.getFileId(id)).nEvents
         if nEvents != nEventsLfn:
             if DEBUG>0:
                 print " ERROR(%s) -- count is different  %d  !=  %d"%(id,nEventsLfn,nEvents)
             incompleteIds[id] = 1
 
+    # check whether file in catalog is on disk
+    virtualIds = {}
+    for id in sorted(uniqueIds):
+        if not fileOnDiskIds.getFileId(id):
+            virtualIds[id] = 1
+
+    # check list of all fileIds that are bad (duplicate or wrong counts) and are also on disk
+    toDeletionIds = {}
+    for id in sorted(incompleteIds):
+        if fileOnDiskIds.getFileId(id):
+            toDeletionIds[id] = 1
+    for id in sorted(duplicatedIds):
+        if fileOnDiskIds.getFileId(id):
+            toDeletionIds[id] = 1
+
+    # report what we have found
+    #--------------------------
+
+    print '  --> %6d/%6d/%6d  allLfns/unique/onDisk - %s'%\
+        (len(uniqueLfnIds),len(uniqueIds),fileOnDiskIds.getSize(),dataset)
+    print '  --> %6d/%6d/%6d/%6d  duplicated/incomplete/virtual/toDelete -  WORK TO BE DONE'%\
+        (len(duplicatedIds),len(incompleteIds),len(virtualIds),len(toDeletionIds))
+
+
+    # here is where we fix everything
+    #--------------------------------
+    
+    # fix the catalog
+    if len(duplicatedIds) > 0:
+        print '\n checkCatalogs.py -- Cleanup the duplicate files from catalogs'
+        removePatternsFromCatalog(catalog,book,dataset,duplicatedIds)
     if len(incompleteIds) > 0:
+        print '\n checkCatalogs.py -- Cleanup the incomplete files from catalogs'
         removePatternsFromCatalog(catalog,book,dataset,incompleteIds)
-
-    print '  --> %6d/%6d/%6d incomplete/unique/total - %s'%(len(incompleteIds),len(uniqueIds),len(uniqueLfnIds),dataset)
-
-
-print ' Number of datasets found: %d'%(len(allDatasets))
+    if len(virtualIds) > 0:
+        print '\n checkCatalogs.py -- Cleanup the virtual files from catalogs'
+        removePatternsFromCatalog(catalog,book,dataset,virtualIds)
+    
+    # fix the files on disk
+    if len(toDeletionIds) > 0:
+        print '\n checkCatalogs.py -- Cleanup the bad files on disk'
+        removeFileIdsFromDisk(book,dataset,toDeletionIds)

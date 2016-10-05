@@ -43,11 +43,11 @@ class fileIds:
         # safely add another Id to the dictionary
 
         if fileId.name in self.duplicatedIds:
-            print ' ERROR -- fileId appeared at least twice already.'
+            print ' ERROR -- fileId appeared at least twice already (%s).'%(fileId.name)
             return
 
         if fileId.name in self.ids:
-            print ' ERROR -- fileId is already in our dictionary.'
+            print ' ERROR -- fileId is already in our dictionary (%s).'%(fileId.name)
             self.ids[fileId.name].show()
             fileId.show()
             print ' ----'
@@ -75,9 +75,14 @@ class fileIds:
         if name in self.ids:
             fileId = self.ids[name]
         else:
-            print ' ERROR -- fileId is already in our dictionary.'
+            print ' ERROR -- fileId is already in our dictionary (%s).'%(name)
 
         return fileId
+
+    def getSize(self):
+        # access to the size of the dictionary of good file Ids
+
+        return len(self.ids)
 
     def show(self):
         # show our fileIds ordered by ids
