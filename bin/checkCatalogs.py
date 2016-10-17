@@ -192,20 +192,6 @@ if pattern == '':
 else:
     print ' Find all datasets matching %s.'%(pattern)
 
-cmd = 'list ' + TRUNC + DIR + "/" + book
-if pattern != "":
-    cmd += "| grep %s"%(pattern)
-
-if DEBUG>0:
-    print ' CMD: ' + cmd
-
-for line in os.popen(cmd).readlines():
-    f = (line[:-1].split("/"))[-1:]
-    dataset = "/".join(f)
-    allDatasets.append(dataset)
-    if DEBUG>1:
-        print ' Found Dataset: ' + dataset
-print ' Number of datasets found: %d'%(len(allDatasets))
 
 for dataset in allDatasets:
     print ' Process Dataset: ' + dataset

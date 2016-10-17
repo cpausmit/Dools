@@ -1,9 +1,83 @@
-class fileId:
+#---------------------------------------------------------------------------------------------------
+# Python Module File to describe metaData, fileId, fileIds and fileIdSet
+#
+# metaData:  basic meta data of a of data file(s). Can be added.
+#
+# fileId:    the smallest unit of a bunch of data which are accounted for on a hard drive.
+#
+# fileIds:   a bunch of fileIds, they are supposed to be unique.
+#
+# FileIdset: a set of files which contain the same type of events and are stored in the same
+#            directory. Filesets are created to reduce the number of 'processing jobs' when talking
+#            about greater collections of data. The number of files per fileset is therefore
+#            crucial.
+#
+# Author: C.Paus                                                                      (Oct 10, 2008)
+#---------------------------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------------------------
+"""
+Class:  metaData(nEvents,nLumiSecs,minRun,minLumiSecInMinRun,maxRun,maxLumiSecInMaxRun)
+
+A given bunch of events, may it be a file or just 10 events or even an entire dataset can be
+specified by minimal set of meta data. This class defines this set of meta data and the methods
+useful for dealing with it.
+"""
+#---------------------------------------------------------------------------------------------------
+class metaData:
+    "A Meta Data description of a bunch of Bambu events (any data/MC events can be described)."
+    #-----------------------------------------------------------------------------------------------
+    # constructor to connect with existing setup
+    #-----------------------------------------------------------------------------------------------
+    def __init__(self,nEvents,
+                 nLumiSecs=0,minRun=999999999,minLumiSecInMinRun=0,maxRun=0,maxLumiSecInMaxRun=0):
+        self.nEvents            = nEvents
+        self.nLumiSecs          = nLumiSecs
+        self.minRun             = minRun
+        self.minLumiSecInMinRun = minLumiSecInMinRun
+        self.maxRun             = maxRun
+        self.maxLumiSecInMaxRun = maxLumiSecInMaxRun
+    #-----------------------------------------------------------------------------------------------
+    # present the current set of Meta Data
+    #-----------------------------------------------------------------------------------------------
+    def show(self):
+        print ' Number of:    events %9d  lumi sections %d'%(self.nEvents,self.nLumiSecs)
+        print ' Lowest  data: run    %9d  lumi section  %9d'%(self.minRun,self.minLumiSecInMinRun)
+        print ' Highest data: run    %9d  lumi section  %9d'%(self.maxRun,self.maxLumiSecInMaxRun)
+    #-----------------------------------------------------------------------------------------------
+    # adding meta data
+    #-----------------------------------------------------------------------------------------------
+    def add(self,right):
+        self.nEvents           += right.nEvents
+        self.nLumiSecs         += right.nLumiSecs
+        if self.minRun > right.minRun or \
+               (self.minRun == right.minRun and \
+                self.minLumiSecInMinRun > right.minLumiSecInMinRun):
+            self.minRun             = right.minRun
+            self.minLumiSecInMinRun = right.minLumiSecInMinRun
+        if self.maxRun < right.maxRun or \
+               (self.maxRun == right.maxRun and \
+                self.maxLumiSecInMaxRun < right.maxLumiSecInMaxRun):
+            self.maxRun             = right.maxRun
+            self.maxLumiSecInMaxRun = right.maxLumiSecInMaxRun
+
+#---------------------------------------------------------------------------------------------------
+"""
+Class:  FileId(name,nEvents,nLumiSecs,minRun,minLumiSecInMinRun,maxRun,maxLumiSecInMaxRun)
+
+A given bunch of events, may it be a file or just 10 events or even an entire dataset can be
+specified by minimal set of meta data. This class defines this set of meta data and the methods
+useful for dealing with it.
+"""
+#---------------------------------------------------------------------------------------------------
+class fileId(metaData):
     '''Class to work with unique fileIds and the number of events they correspond to.'''
 
-    def __init__(self,name,nEvents):
-        # initialize the fileId correctly while extracting the proper name
+    def __init__(self,name,nEvents,
+                 nLumiSecs=0,minRun=999999999,minLumiSecInMinRun=0,maxRun=0,maxLumiSecInMaxRun=0):
+        metaData.__init__(self,nEvents,nLumiSecs,minRun,minLumiSecInMinRun,maxRun,maxLumiSecInMaxRun)
 
+        # initialize the fileId correctly while extracting the proper name
         if '/' in name:
             name = (name.split("/"))[-1]
         if '.root' in name:
@@ -11,27 +85,48 @@ class fileId:
         if '_tmp' in name:
             name = name.replace("_tmp","")
         self.name = name
-        self.nEvents = nEvents
 
-    def nEvents(self):
-        # return how many evednts in this fileId
+    def getNEvents(self):
+        # return how many events in this fileId
 
         return self.nEvents
 
-    def filename(self):
+    def getName(self):
+        # return the file name corresponding to this Id
+
+        return self.name
+
+    def getFileName(self):
         # return the file name corresponding to this Id
 
         return self.name + '.root'
 
-    def tmpFilename(self):
+    def getTmpName(self):
         # return the temporary file name corresponding to this Id
 
         return self.name + '_tmp.root'
 
     def show(self):
-        # show fileId
-        print " %s - %d"%(self.name,self.nEvents)
+        print ' ==== Meta Data for File %s ===='%(self.name)
+        metaData.show(self)
 
+    def showShort(self,filesetName,oFile=0,debug=1):
+        line = "%s %40s %9d %9d %9d %6d %9d %6d"%(filesetName,self.name, \
+                                                  self.nEvents,self.nLumiSecs, \
+                                                  self.minRun,self.minLumiSecInMinRun, \
+                                                  self.maxRun,self.maxLumiSecInMaxRun)
+        if debug > 0:
+            print line
+        oFile.write(line+'\n')
+
+#---------------------------------------------------------------------------------------------------
+"""
+Class:  fileIds()
+
+This class is a smart container for a bunch of fileIds to keep track of duplicates and facilitate
+work with these fileIds
+"""
+#---------------------------------------------------------------------------------------------------
 class fileIds:
     '''Class to work with a bunch of unique fileIds.'''
 
@@ -104,3 +199,67 @@ class fileIds:
             
         for id in sorted(self.duplicatedIds):
             print " %s - %d"%(id,self.duplicatedIds[id].nEvents)
+
+
+#---------------------------------------------------------------------------------------------------
+"""
+Class:  Fileset(name)
+
+This class defines the Meta Data relevant for a set of files. They will be extracted from the files
+being added to the set.
+"""
+#---------------------------------------------------------------------------------------------------
+class fileIdSet(metaData):
+    "A Meta Data description of a set of Bambu Files (any data/MC file can be described this way)."
+
+    name               = 'undefined'
+    dir                = ''
+    fileList           = []
+
+    def __init__(self,name,dir):
+        # constructor to connect with existing setup
+
+        metaData.__init__(self,0)
+        self.name = name
+        self.dir  = dir
+        fileList  = []
+
+    def reset(self,name,dir):
+        # resetting it to zero
+
+        metaData.__init__(self,0)
+        self.name     = name
+        self.dir      = dir
+        self.fileList = []
+
+    def show(self):
+        # present the contents of the fileset in various forms
+
+        print ' ==== Meta Data for Fileset %s ===='%(self.name)
+        metaData.show(self)
+
+    def showShort(self,oFile=0,debug=1):
+        # present the contents of the fileset in various forms
+
+        line = "%s %40s %9d %9d %9d %6d %9d %6d"%(self.name,self.dir,self.nEvents,self.nLumiSecs, \
+                                                      self.minRun,self.minLumiSecInMinRun, \
+                                                      self.maxRun,self.maxLumiSecInMaxRun)
+        if debug > 0:
+            print line
+        oFile.write(line+'\n')
+
+    def showShortFiles(self,oFile=0,debug=1):
+        # present the contents of the fileset in various forms
+        for file in self.fileList:
+            file.showShort(self.name,oFile,debug)
+
+    def addFile(self,file):
+        # add one more file
+
+        self.add(file)
+        self.fileList.append(file)
+
+    def nFiles(self):
+        # how many files in this set
+
+        return len(self.fileList)
