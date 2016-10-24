@@ -111,7 +111,7 @@ class fileId(metaData):
         metaData.show(self)
 
     def showShort(self,filesetName,oFile=0,debug=1):
-        line = "%s %40s %9d %9d %9d %6d %9d %6d"%(filesetName,self.name, \
+        line = "%s %40s %9d %9d %9d %6d %9d %6d"%(filesetName,self.name+'.root', \
                                                   self.nEvents,self.nLumiSecs, \
                                                   self.minRun,self.minLumiSecInMinRun, \
                                                   self.maxRun,self.maxLumiSecInMaxRun)

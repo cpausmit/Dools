@@ -12,7 +12,7 @@ CATA = "/home/cmsprod/catalog/t2mit"
 Db = MySQLdb.connect(read_default_file="/etc/my.cnf",read_default_group="mysql",db="Bambu")
 Cursor = Db.cursor()
 
-usage = "\n   usage:  extractRawFiles.py  <book>  <pattern>  [ <nFilePerSet> ]\n"
+usage = "\n   usage:  generateCatalogs.py  <book>  <pattern>  [ <nFilePerSet> ]\n"
 
 #===================================================================================================
 #  H E L P E R S

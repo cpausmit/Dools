@@ -84,7 +84,7 @@ def loadCatalog(catalog,book,dataset):
     # first make sure the catalog is compact
 
     rc = 0
-    cmd = "cat " + catalog + '/' + book + '/' + dataset + '/RawFiles.00'
+    cmd = "grep root " + catalog + '/' + book + '/' + dataset + '/RawFiles.00'
     list = cmd.split(" ")
     p = subprocess.Popen(list,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     (out, err) = p.communicate()
@@ -191,6 +191,21 @@ if pattern == '':
     print ' Find all datasets.'
 else:
     print ' Find all datasets matching %s.'%(pattern)
+
+cmd = 'list ' + TRUNC + DIR + "/" + book
+if pattern != "":
+    cmd += "| grep %s"%(pattern)
+
+if DEBUG>0:
+    print ' CMD: ' + cmd
+
+for line in os.popen(cmd).readlines():
+    f = (line[:-1].split("/"))[-1:]
+    dataset = "/".join(f)
+    allDatasets.append(dataset)
+    if DEBUG>1:
+        print ' Found Dataset: ' + dataset
+print ' Number of datasets found: %d'%(len(allDatasets))
 
 
 for dataset in allDatasets:
