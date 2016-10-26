@@ -14,26 +14,20 @@ if [ "$OPTION" == "" ] || [ "$OPTION" == "fibs" ]
 then
   echo ""
   echo " FiBS -- makeCatalog"
-  echo -n "  "
-  wc -l ~/cms/work/fibs/*.list
+  wc -l ~/cms/work/fibs/*.list | sed 's/^//'
+  echo "  - latest logs:"
+  fibsLastLogs checkFile 100 | tail -5| sed "s/^/   /"
 fi
 
 if [ "$OPTION" == "" ] || [ "$OPTION" == "bambu" ]
 then
   echo ""
   echo " Bambu -- progress"
-  
-  echo -n "  044 - "
-  list /cms/store/user/paus/filefi/044/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root > files-in-tmp.bak
-  wc -l files-in-tmp.bak
   echo -n "  045 - "
-  list /cms/store/user/paus/filefi/045/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root > files-in-tmp.bak
-  wc -l files-in-tmp.bak
+  list /cms/store/user/paus/filefi/045/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
   echo -n "  046 - "
-  list /cms/store/user/paus/filefi/046/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root > files-in-tmp.bak
-  wc -l files-in-tmp.bak
+  list /cms/store/user/paus/filefi/046/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
   echo ""
-  rm -f files-in-tmp.bak
 fi
 
 if [ "$OPTION" == "" ] || [ "$OPTION" == "monotop" ]

@@ -271,23 +271,40 @@ for dataset in allDatasets:
     print '  --> %6d/%6d/%6d/%6d  duplicated/incomplete/virtual/toDelete -  WORK TO BE DONE'%\
         (len(duplicatedIds),len(incompleteIds),len(virtualIds),len(toDeletionIds))
 
+    # cross checking
 
-    ## # find file that are on disk but not in unique
-    print ' ONDISK '
+    print "\n ==== Start cross checks ====\n"
+
+    # find file that are on disk but not in catalog
+    print ' ondisk '
     for fileName in sorted(fileOnDiskIds.getIds()):
         if not (fileName in uniqueIds):
             print " MISSING IN CATALOG: %s"%(fileName)
         else:
-            print " OK: %s"%(fileName)
-##    print ' ONDISK '
-##    for fileName in sorted(uniqueIds):
-##        if not (fileName in uniqueLfnIds):
-##            print " MISSING IN CATALOG: %s"%(fileName)
-##        else:
-##            print " %s"%(fileName)
-##
+            pass
+            #print " OK: %s"%(fileName)
+            #print " OK: %s"%(fileName)
+        if not (fileName in uniqueLfnIds):
+            print " ERROR UNKNOWN LFN: %s"%(fileName)
+
+    # find file that are in the catalog but not on disk
+    print ' in catalog '
+    for fileName in sorted(uniqueIds):
+        if not (fileName in fileOnDiskIds.getIds()):
+            print " MISSING ON DISK: %s"%(fileName)
+        else:
+            pass
+            #print " OK: %s"%(fileName)
+        if not (fileName in uniqueLfnIds):
+            print " ERROR UNKNOWN LFN: %s"%(fileName)
+
+    print "\n ==== Finished cross checks ====\n"
+
+
     # here is where we fix everything
     #--------------------------------
+
+    print "\n ==== Start fixes ====\n"
     
     # fix the catalog
     if len(duplicatedIds) > 0:
@@ -304,3 +321,5 @@ for dataset in allDatasets:
     if len(toDeletionIds) > 0:
         print '\n checkCatalogs.py -- Cleanup the bad files on disk'
         removeFileIdsFromDisk(book,dataset,toDeletionIds)
+
+    print "\n ==== Finish fixes ====\n"

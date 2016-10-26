@@ -222,7 +222,7 @@ class fileIdSet(metaData):
         metaData.__init__(self,0)
         self.name = name
         self.dir  = dir
-        fileList  = []
+        self.fileList  = []
 
     def reset(self,name,dir):
         # resetting it to zero

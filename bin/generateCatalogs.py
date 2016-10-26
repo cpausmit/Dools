@@ -60,7 +60,7 @@ def writeRawFile(rawFile,book,dataset):
     nFiles = 0
 
     with open(rawFile,'w') as fHandle:
-        fHandle.write('# SAMPLE: %s - %s\n'%(book,dataset))
+        #fHandle.write('# SAMPLE: %s - %s\n'%(book,dataset)) # this is confusing
         catalogedIds = getFiles(book,dataset)
 
         for id in sorted(catalogedIds.getIds()):
@@ -76,17 +76,15 @@ def writeRawFile(rawFile,book,dataset):
 def makeCatalog(dir,nFilesPerSet):
 
     cmd = 'cat ' + dir + '/RawFiles.?? | grep root | sort -u'
-    #print 'Execute:  ' + cmd
 
-    iFileset    = 0
-    init        = False
+    init = False
+    iFileset = 0
+    fileset = None
 
     filesetsOut = open(dir + '/Filesets','w')
-
     with open(dir + '/Files','w') as filesOut:
         for line in os.popen(cmd).readlines():  # run command
             line = line[:-1]
-            # print ' LINE: ' + line
             line = " ".join(str(line).split()).strip()
             f = line.split(' ')
             g = f[0].split('/')

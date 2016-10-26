@@ -12,6 +12,9 @@ TRUNC = "/cms"
 DIR = "/store/user/paus"
 LFNROOT = "/home/cmsprod/cms/jobs/lfns"
 
+#===================================================================================================
+#  H E L P E R S
+#===================================================================================================
 def addAllLfnsForDataset(dataset):
 
     # First get the dataset id
@@ -76,6 +79,8 @@ def addLfn(datasetId,blockId,fileName,pathName,nEvents):
     except:
         print ' ERROR (%s) - could not insert new file.'%(sql)
         print " Unexpected error:", sys.exc_info()[0]
+
+    return
 
 def findAllDatasets(book,pattern):
     # find all datasets on Tier-2 in a given book matching a given pattern
@@ -190,8 +195,10 @@ def testLocalSetup(book):
         print usage
         sys.exit(1)
 
+    return
+
 #===================================================================================================
-# Main starts here
+#  M A I N
 #===================================================================================================
 # Define string to explain usage of the script
 usage  = "\n"
