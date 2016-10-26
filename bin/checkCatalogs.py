@@ -162,7 +162,7 @@ def loadFilesFromDisk(book,dataset):
         #sys.exit(1)
     
     for line in out.split("\n"):
-        if 'root' in line:
+        if '.root' in line:
             f = line.split(" ")
             if len(f) > 1:
                 name = f[1]
@@ -272,6 +272,20 @@ for dataset in allDatasets:
         (len(duplicatedIds),len(incompleteIds),len(virtualIds),len(toDeletionIds))
 
 
+    ## # find file that are on disk but not in unique
+    print ' ONDISK '
+    for fileName in sorted(fileOnDiskIds.getIds()):
+        if not (fileName in uniqueIds):
+            print " MISSING IN CATALOG: %s"%(fileName)
+        else:
+            print " OK: %s"%(fileName)
+##    print ' ONDISK '
+##    for fileName in sorted(uniqueIds):
+##        if not (fileName in uniqueLfnIds):
+##            print " MISSING IN CATALOG: %s"%(fileName)
+##        else:
+##            print " %s"%(fileName)
+##
     # here is where we fix everything
     #--------------------------------
     
