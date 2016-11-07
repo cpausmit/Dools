@@ -14,9 +14,9 @@ if [ "$OPTION" == "" ] || [ "$OPTION" == "fibs" ]
 then
   echo ""
   echo " FiBS -- makeCatalog"
-  wc -l ~/cms/work/fibs/*.list | sed 's/^//'
+  wc -l ~/cms/work/fibs/*.list | sed 's/^0/  /'
   echo "  - latest logs:"
-  fibsLastLogs checkFile 100 | tail -5| sed "s/^/   /"
+  fibsLastLogs.py checkFile 100 | tail -5| sed "s/^/ /"
 fi
 
 if [ "$OPTION" == "" ] || [ "$OPTION" == "bambu" ]

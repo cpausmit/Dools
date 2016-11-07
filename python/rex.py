@@ -87,7 +87,7 @@ class Rex:
         (out, err) = p.communicate()
         rc = p.returncode
     
-        if rc != 0:
+        if rc != 0 and DEBUG > 0:
             print " ERROR on remote end: %d"%(int(rc))
             print " "
             print " " + err
