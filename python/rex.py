@@ -28,6 +28,7 @@ class Rex:
         self.user = user
 
         self.sshBase = 'ssh -x %s@%s '%(self.user,self.host)
+        self.scpBase = '%s@%s'%(self.user,self.host)
 
     def getInternalRC(self,output):
         # find the return code from the command executed at the remote site
@@ -48,7 +49,8 @@ class Rex:
         return (irc,output)
     
     def executeAction(self,action):
-        # execute the defined action and return rc  - return code
+        # execute the defined action and return irc - remote return code
+        #                                       rc  - local return code
         #                                       out - standard output
         #                                       err - standard error
         
@@ -74,6 +76,34 @@ class Rex:
                 
         return (irc,rc,out,err)
 
+    def executeLongAction(self,action):
+        # execute the defined action and return irc - remote return code
+        #                                       rc  - local return code
+        #                                       out - standard output
+        #                                       err - standard error
+        
+        # generate a script file
+        scriptFile = 'rex.%d'%(os.getpid())
+        with open(scriptFile,'w') as fH:
+            fH.write('#!/bin/bash\n%s\n'%(action))
+
+        # make executable
+        os.system("chmod 755 " + scriptFile)
+
+        # transfer script file to the remote place
+        os.system("scp -q " + scriptFile + " " + self.scpBase + ":")
+        
+        # execute the reomte script
+        (irc,rc,out,err) = self.executeAction("./" + scriptFile)
+
+        # remove executable script from remote site
+        self.executeAction("rm -f " + scriptFile)
+
+        # remove executable script locally once we are done
+        os.system("rm -f " + scriptFile)
+
+        return (irc,rc,out,err)
+
     def executeLocalAction(self,action):
         # execute the defined action and return rc  - return code
         #                                       out - standard output
@@ -94,19 +124,71 @@ class Rex:
                 
         return (rc,out,err)
 
+    def executeLocalLongAction(self,action):
+        # execute the defined action and return rc  - local return code
+        #                                       out - standard output
+        #                                       err - standard error
+        
+        # generate a script file
+        scriptFile = 'rex.%d'%(os.getpid())
+        with open(scriptFile,'w') as fH:
+            fH.write('#!/bin/bash\n%s\n'%(action))
+
+        # make executable
+        os.system("chmod 755 " + scriptFile)
+
+        # execute the script
+        (rc,out,err) = self.executeLocalAction("./" + scriptFile)
+
+        # remove executable script locally once we are done
+        os.system("rm -f " + scriptFile)
+
+        return (rc,out,err)
+
 #===================================================================================================
 # M A I N [for testing only]
 #===================================================================================================
-#if __name__ == "__main__":
-#    rex = Rex()
+if __name__ == "__main__":
+    rex = Rex()
+#
+# -- standard short remote
+#
 #    (irc,rc,out,err) = rex.executeAction("ls -l cms/logs\n ls -l cms/logs/filefi/0?*\n ls -lhrt")
-#    
 #    print " "
 #    print "==== SUMMARY ===="
 #    print " "
 #    print " Output\n" + out
 #    print " "
 #    print " Return code on remote end: %d"%(int(irc))
+#    print " "
+#    if err != "":
+#        print " Error\n" + err
+#        print " "
+#
+# -- long
+#
+#    (irc,rc,out,err) = rex.executeLongAction("ls -l cms/logs\nls -l cms/logs/filefi/0?*\nls -lhrt")
+#    print " "
+#    print "==== SUMMARY ===="
+#    print " "
+#    print " Output\n" + out
+#    print " "
+#    print " Return code on remote end: %d"%(int(irc))
+#    print " "
+#    if err != "":
+#        print " Error\n" + err
+#        print " "
+#
+# -- local
+#    (rc,out,err) = rex.executeLocalAction("ls -l cms/logs\n ls -l cms/logs/filefi/0?*\n ls -lhrt")
+## also works
+##    (rc,out,err) = rex.executeLocalAction("ls -l cms/logs; ls -l cms/logs/filefi/0?*; ls -lhrt")
+#    print " "
+#    print "==== LOCAL SUMMARY ===="
+#    print " "
+#    print " Output\n" + out
+#    print " "
+#    print " Return code: %d"%(int(rc))
 #    print " "
 #    if err != "":
 #        print " Error\n" + err
