@@ -30,6 +30,15 @@ then
   echo ""
 fi
 
+if [ "$OPTION" == "" ] || [ "$OPTION" == "panda" ]
+then
+  echo ""
+  echo " Panda -- progress"
+  echo -n "  000 - "
+  list /cms/store/user/paus/pandaf/000/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
+  echo ""
+fi
+
 if [ "$OPTION" == "" ] || [ "$OPTION" == "monotop" ]
 then
   nMonoTopFast=`rglexec hdfs dfs -ls /cms/store/user/paus/fastsm/043/monotop* |grep bambu |wc -l`
