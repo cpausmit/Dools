@@ -8,7 +8,6 @@ then
 fi
 
 # based on data on tier-2
-
 hadoop=/cms/store/user/paus/$book
 dsets=`t2tools.py --action ls --source $hadoop | sed "s@.*$book/@@"`
 mybook=`echo $book | tr / ' '`
