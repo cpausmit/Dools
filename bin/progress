@@ -23,8 +23,6 @@ if [ "$OPTION" == "" ] || [ "$OPTION" == "bambu" ]
 then
   echo ""
   echo " Bambu -- progress"
-  echo -n "  045 - "
-  list /cms/store/user/paus/filefi/045/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
   echo -n "  046 - "
   list /cms/store/user/paus/filefi/046/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
   echo ""
@@ -36,6 +34,8 @@ then
   echo " Panda -- progress"
   echo -n "  000 - "
   list /cms/store/user/paus/pandaf/000/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
+  echo -n "  001 - "
+  list /cms/store/user/paus/pandaf/001/*/crab_0*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
   echo ""
 fi
 

@@ -16,6 +16,14 @@ echo ""
 ssh -x paus@se01.cmsaf.mit.edu df -h /mnt/hadoop
 echo ""
 echo "Hadoop details"
+list=`rglexec hdfs dfs -du -s /cms/store/user/paus/pandaf/\*  | grep -v RC: \
+               | sed 's#hdfs://t2srv0014:9000/cms/store/user/##' | sed 's/\s\+/:/'`
+for line in $list
+do
+  dir=` echo $line | cut -d: -f2`
+  size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+  printf "%-20s %7.2f TB\n" $dir $size
+done
 list=`rglexec hdfs dfs -du -s /cms/store/user/paus/filefi/\*  | grep -v RC: \
                | sed 's#hdfs://t2srv0014:9000/cms/store/user/##' | sed 's/\s\+/:/'`
 for line in $list
