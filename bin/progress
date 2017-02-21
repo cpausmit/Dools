@@ -17,6 +17,7 @@ then
   wc -l ~/cms/work/fibs/*.list | sed 's/^0/  /'
   echo "  - latest logs:"
   fibsLastLogs.py checkFile 100 | tail -5| sed "s/^/ /"
+  echo ""
 fi
 
 if [ "$OPTION" == "" ] || [ "$OPTION" == "bambu" ]
