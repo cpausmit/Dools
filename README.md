@@ -1,2 +1,3 @@
 # Dools
-Data handling tools for our production/analysis activities. They sit on top of PyCox and T2Tools.
+
+Data handling tools for our production/analysis activities. They depend on PyCox and T2Tools.
