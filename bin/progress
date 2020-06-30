@@ -1,6 +1,6 @@
 #!/bin/bash
 #===================================================================================================
-# This is a temporary file that should be used to summarize the present critical things to monitor
+# This is a temporary file that should be used to summarize the present critical things to monitor.
 #
 #===================================================================================================
 OPTION="$1"
@@ -20,25 +20,16 @@ then
   echo ""
 fi
 
-if [ "$OPTION" == "" ] || [ "$OPTION" == "bambu" ]
-then
-  echo ""
-  echo " Bambu -- progress"
-  echo -n "  046 - "
-  list /cms/store/user/paus/filefi/046/*/$KRAKEN_TMP_PREFIX*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
-  echo ""
-fi
-
 if [ "$OPTION" == "" ] || [ "$OPTION" == "panda" ]
 then
   echo ""
   echo " Panda -- progress"
-  echo -n "  004 - "
-  list /cms/store/user/paus/pandaf/004/*/$KRAKEN_TMP_PREFIX*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
-  echo -n "  005 - "
-  list /cms/store/user/paus/pandaf/005/*/$KRAKEN_TMP_PREFIX*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
-  echo -n "  006 - "
-  list /cms/store/user/paus/pandaf/006/*/$KRAKEN_TMP_PREFIX*/*_tmp.root|grep [0-9A-Z]_tmp.root | wc -l
+  for version in `echo 004 008 009`
+  do
+    echo -n "  $version - "
+    list /cms/store/user/paus/pandaf/$version/*/$KRAKEN_TMP_PREFIX*/*_tmp.root \
+         | grep [0-9A-Z]_tmp.root | wc -l
+  done
   echo ""
 fi
 

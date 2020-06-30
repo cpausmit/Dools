@@ -10,32 +10,74 @@ echo ""
 echo "---- Tier-3 Space ----"
 echo ""
 df -h /mnt/hadoop
+
+echo ""
+echo "Hadoop details"
+list=`hdfs dfs -du -s /cms/store/user/* | sed 's#/cms/store/user/##' | sed 's/\s\+/:/'`
+for line in $list
+do
+    dir=` echo $line | cut -d: -f2`
+    size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+    if [ "$size" != "0" ]
+    then
+        printf "%-12s %8.3f TB\n" $dir $size
+    fi
+done
+echo "User total---------"
+list=`hdfs dfs -du -s /cms/store/user | sed 's#/cms/store/##' | sed 's/\s\+/:/'`
+for line in $list
+do
+    dir=` echo $line | cut -d: -f2`
+    size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+    printf "%-12s %8.3f TB\n" $dir $size
+done
+echo ""
+list=`hdfs dfs -du -s /scratch/* | sed 's#/scratch/##' | sed 's/\s\+/:/'`
+for line in $list
+do
+    dir=` echo $line | cut -d: -f2`
+    size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+    #echo "SIZE: $size"
+    if [ "$size" != "0" ]
+    then
+        printf "%-12s %8.3f TB\n" $dir $size
+    fi
+done
+echo "Scratch total-------"
+list=`hdfs dfs -du -s /scratch | sed 's#/##' | sed 's/\s\+/:/'`
+for line in $list
+do
+    dir=` echo $line | cut -d: -f2`
+    size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+    printf "%-12s %8.3f TB\n" $dir $size
+done
+echo ""
+
 echo ""
 echo "---- Tier-2 Space ----"
 echo ""
-rglexec df -h /mnt/hadoop | grep -v RC
+ssh t2bat0220.cmsaf.mit.edu -l paus df -h /mnt/hadoop | grep -v RC
 echo ""
 echo "Hadoop details"
-list=`rglexec hdfs dfs -du -s /cms/store/user/paus/\*/\*  | grep -v transfer | grep -v RC: \
-               | sed 's#hdfs://t2srv0014:9000/cms/store/user/##' | sed 's/\s\+/:/'`
+list=`ssh t2bat0220.cmsaf.mit.edu -l paus hdfs dfs -du -s /cms/store/user/paus/\*/\*  | grep -v transfer | grep -v RC: \
+    | sed 's#/cms/store/user/paus/##' | sed 's/\s\+/:/'`
 for line in $list
 do
-  dir=` echo $line | cut -d: -f2`
-  size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
-  printf "%-20s %7.2f TB\n" $dir $size
+    dir=` echo $line | cut -d: -f2`
+    size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+    printf "%-12s %8.3f TB\n" $dir $size
 done
 
 echo ""
 echo "Hadoop total"
-list=`rglexec hdfs dfs -du -s /cms/store/user/paus | grep -v RC: \
-               | sed 's#hdfs://t2srv0014:9000/cms/store/user/##' | sed 's/\s\+/:/'`
+list=`ssh t2bat0220.cmsaf.mit.edu -l paus hdfs dfs -du -s /cms/store/user/paus | grep -v RC: \
+    | sed 's#/cms/store/user/##' | sed 's/\s\+/:/'`
 for line in $list
 do
-  dir=` echo $line | cut -d: -f2`
-  size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
-  printf "%-20s %8.3f TB\n" $dir $size
+    dir=` echo $line | cut -d: -f2`
+    size=`echo $line | cut -d: -f1 | awk ' {print $1/1000/1000/1000/1000} '`
+    printf "%-12s %8.3f TB\n" $dir $size
 done
-
 echo ""
 
 exit 0;

@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 import os, pprint, subprocess, sys
 
-usage = "\n  usage:  download.py  <mitcfg> <version> <dataset> <target> [ pattern = 'root' ]\n"
+usage = "\n  usage:  upload.py  <mitcfg> <version> <dataset> <target> [ pattern = 'root' ]\n"
 
 #===================================================================================================
 #  H E L P E R S
 #===================================================================================================
-def downloadFile(file,target):
-    # download this file
+def uploadFile(file,target):
+    # upload this file
 
     rc = 0
-    cmd = 't2tools.py --action down --source ' + file + ' --target ' + target
-    #print " download: %s"%(cmd)
+    #cmd = 't2tools.py --action up --source /mnt/hadoop' + target + '/' + file + ' --target ' + target
+    cmd = 'gfal-copy /mnt/hadoop' + target + '/' + file + \
+        ' gsiftp://se01.cmsaf.mit.edu:2811/' + target + '/' + file
+    #print cmd
+
     list = cmd.split(" ")
     p = subprocess.Popen(list,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     (out, err) = p.communicate()
@@ -28,7 +31,7 @@ def makeDir(target):
     # make the directory
 
     rc = 0
-    cmd = 'mkdir -p %s; chmod a+r %s; chmod g+w %s'%(target,target,target)
+    cmd = 'makedir %s'%(target)
     os.system(cmd)
 
     return
@@ -46,7 +49,7 @@ def loadCompletedFiles(tgt,pattern):
 
     completedFiles = []
 
-    cmd = '/bin/ls -1 ' + tgt
+    cmd = 'list ' + tgt
     print " CMD: %s"%(cmd)
     list = cmd.split(" ")
     p = subprocess.Popen(list,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -57,16 +60,21 @@ def loadCompletedFiles(tgt,pattern):
     for line in lines:
         if not pattern in line:
             continue
-        completedFiles.append(line)
+        f = line.split("/") 
+        if len(f) > 1:
+            completedFiles.append(f[-1])
+
+    print "completed:"
+    print completedFiles
 
     return completedFiles
 
-def loadFilesToDownload(hadoop,dataset,pattern):
+def loadFilesToUpload(hadoop,dataset,pattern):
     # load the files from an existing temporary directory for cataloging and checks
 
     files = []
 
-    cmd = 't2tools.py --action ls --source ' + hadoop + '/' + dataset
+    cmd = 'ls -1 /mnt/hadoop' + hadoop + '/' + dataset
     list = cmd.split(" ")
     p = subprocess.Popen(list,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     (out, err) = p.communicate()
@@ -76,17 +84,12 @@ def loadFilesToDownload(hadoop,dataset,pattern):
     for line in lines:
         if not pattern in line:
             continue
-        f = line.split(" ") 
-        if len(f) > 1:
-            files.append(f[1])
+        files.append(line)
+
+    print "toUpload:"
+    print files
 
     return files
-
-def updateXrootdName(fileName):
-    # adjust entry for the file moving
-
-    newFileName = fileName.replace('root://xrootd.cmsaf.mit.edu/','/cms')
-    return newFileName
 
 #===================================================================================================
 #  M A I N
@@ -111,7 +114,7 @@ book = mitcfg + '/' + version
 hadoop = "/cms/store/user/paus/" + book
 
 # find the list of files to consider
-files = loadFilesToDownload(hadoop,dataset,pattern)
+files = loadFilesToUpload(hadoop,dataset,pattern)
 # find the list of files already completed
 completedFiles = loadCompletedFiles(target,pattern) # this might contain other dataset files
 
@@ -129,8 +132,8 @@ for file in files:
 
 
     if fileName in completedFiles:
-        print "     INFO - This file is already downloaded."
+        print "     INFO - This file is already uploaded."
         continue
             
-    # doing the downloading here
-    rc = downloadFile(file,target)
+    # doing the uploading here
+    rc = uploadFile(file,target)
